@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarDealer, CarModel
-from .restapis import get_request, get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id_from_cf
+from .restapis import get_request, post_request, get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id_from_cf
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
@@ -118,21 +118,30 @@ def get_dealer_details(request, dealer_id):
 def add_review(request, dealer_id):
     if request.method == "GET":
         context = {}
-        cars = CarModel.objects.get(dealer_id=int(dealer_id))
+        cars = CarModel.objects.filter(dealer_id=int(dealer_id))
+        #cars = get_object_or_404(CarModel, dealer_id=int(dealer_id))
         context["cars"] = cars
+        url = "https://189c5576.eu-de.apigw.appdomain.cloud/api/dealership"
+        dealer = get_dealer_by_id_from_cf(url, dealer_id)
+        context["dealer"] = dealer
         return render(request, 'djangoapp/add_review.html', context)
     if request.method == "POST":
-        if user.is_authenticated:
+        if request.user.is_authenticated:
             url = "https://189c5576.eu-de.apigw.appdomain.cloud/api/review"
             review = {}
-            review["time"] = datetime.utcnow().isoformat()
+            #review["time"] = datetime.utcnow().isoformat()
             review["dealership"] = dealer_id
-            review["name"] = user.first_name
+            review["name"] = request.user.first_name
             review["review"] = request.POST['content']
-            review["purchase"] = request.POST['purchasecheck']
-            review["purchase_date"] = datetime.utcnow().isoformat(request.POST['purchasedate'])
+            purchase_input = request.POST.getlist('purchasecheck')
+            if len(purchase_input) == 1:
+                review["purchase"] = True
+            else:
+                review["purchase"] = False
+            month, day, year = request.POST['purchasedate'].split('/')
+            review["purchase_date"] = datetime(int(year), int(month), int(day)).isoformat()
             car = CarModel.objects.get(id=request.POST['car'])
-            review["car_make"] = car.make.name
+            review["car_make"] = car.car_make.name
             review["car_model"] = car.name
             review["car_year"] = car.year.strftime("%Y")
             json_payload = {}
