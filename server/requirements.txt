@@ -4,3 +4,4 @@ gunicorn==20.0.4
 Pillow==8.0.1
 ibm-watson
 ibm-cloud-sdk-core
+python-dotenv

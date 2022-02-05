@@ -5,6 +5,8 @@ from requests.auth import HTTPBasicAuth
 from ibm_watson import NaturalLanguageUnderstandingV1
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson.natural_language_understanding_v1 import Features, SentimentOptions
+from dotenv import load_dotenv
+import os
 
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
@@ -80,9 +82,8 @@ def get_dealer_reviews_from_cf(url, dealerId):
             purchase=review["purchase"], review=review["review"],
             purchase_date=review["purchase_date"], car_make=review["car_make"],
             car_model=review["car_model"], car_year=review["car_year"],
-            sentiment="", id=review["_id"])
+            sentiment=analyze_review_sentiments(review["review"]), id=review["_id"])
             results.append(review_obj)
-            #sentiment=analyze_review_sentiments(review["review"])
     return results
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
@@ -107,14 +108,18 @@ def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 def analyze_review_sentiments(text): 
-    url = "https://api.eu-de.natural-language-understanding.watson.cloud.ibm.com/instances/4e023d87-0b56-49b7-bad2-29b807f4a1c3" 
-    api_key = ""
-    authenticator = IAMAuthenticator(api_key) 
-    natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
-    natural_language_understanding.set_service_url(url)
-    response = natural_language_understanding.analyze( text=text ,features=Features(sentiment=SentimentOptions(targets=[text]))).get_result()
-    label=json.dumps(response, indent=2)
-    label = response['sentiment']['document']['label']
+    url = "https://api.eu-de.natural-language-understanding.watson.cloud.ibm.com/instances/a911b5f5-09cc-41cd-81fb-3eab635413dd" 
+    load_dotenv()
+    api_key = os.getenv("NLU_API_KEY")
+    try:
+        authenticator = IAMAuthenticator(api_key) 
+        natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
+        natural_language_understanding.set_service_url(url)
+        response = natural_language_understanding.analyze( text=text ,features=Features(sentiment=SentimentOptions(targets=[text]))).get_result()
+        label = json.dumps(response, indent=2)
+        label = response['sentiment']['document']['label']
+    except:
+        label = "error"
     return(label)
 
 

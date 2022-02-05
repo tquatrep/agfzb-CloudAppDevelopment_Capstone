@@ -50,7 +50,7 @@
             <div class="card-colums">
                 {% for review in reviews %}
                 <div class="card mb-3">
-                    <div class="card-header"><img class="img-fluid" style="max-width: 30px;" src="{{MEDIA_URL}}/emoji/positive.png">  
+                    <div class="card-header"><img class="img-fluid" style="max-width: 30px;" src="{{MEDIA_URL}}/emoji/{{ review.sentiment }}.png">  
                         <div class="card-title">
                             {{ review.car_make }}, {{ review.car_model }}, {{ review.car_year }} <i>(posted by <b>{{ review.name }}</b>)</i>
                         </div>
