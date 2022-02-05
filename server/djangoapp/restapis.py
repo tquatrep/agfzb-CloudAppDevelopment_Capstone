@@ -35,10 +35,12 @@ def get_request(url, api_key=None, **kwargs):
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
 def post_request(url, payload, **kwargs):
-    try:
-        response = requests.post(url, params=kwargs, json=payload)
-    except:
-        print("Network exception occurred")
+    print(kwargs)
+    print("POST to {} ".format(url))
+    print(payload)
+    response = requests.post(url, params=kwargs, json=payload)
+    status_code = response.status_code
+    print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
     return json_data
 
@@ -78,7 +80,7 @@ def get_dealer_reviews_from_cf(url, dealerId):
             purchase=review["purchase"], review=review["review"],
             purchase_date=review["purchase_date"], car_make=review["car_make"],
             car_model=review["car_model"], car_year=review["car_year"],
-            sentiment="", id=review["id"])
+            sentiment="", id=review["_id"])
             results.append(review_obj)
             #sentiment=analyze_review_sentiments(review["review"])
     return results
